@@ -1,0 +1,151 @@
+# Default values for kafkahelmdeploy.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+kafkaKeystoreFileName: kafka-keystore
+kafkaTruststoreFileName: kafka-truststore
+kafkaJaasFileName: kafka-jaas.conf
+kafkaKeyPassFileName: key-password
+kafkaKeystorePassFileName: keystore-password
+kafkaTruststorePassFileName: truststore-password
+connectJaasFileName: client-jaas.conf
+connectTruststoreFileName: client-truststore
+zookeeperJaasFileName: zookeeper-jaas.conf
+
+secrets:
+  kafkaKeystoreSecretName: keystore-secret-name
+  kafkaTruststoreSecretName: truststore-secret-name
+  kafkaKeypassSecretName: keypass-secret-name
+  kafkaKeystorepassSecretName: keystorepass-secret-name
+  kafkaTruststorepassSecretName: truststorepass-secret-name
+  kafkaJaasSecretName: kafka-jaas-secret-name
+  zookeeperJaasSecretName: zookeeper-jaas-secret-name  
+  connectTruststorePasswordKey: truststorepass
+  connectSecretName: connect-pass-secret-name
+  connectTruststoreSecretName: connect-truststore-secret-name
+  connectJaasSecretName: connect-jaas-secret-name
+
+metadata:
+  kafka:
+    name: kafka
+  zookeeper:
+    name: zookeeper
+  connect:
+    name: kafkaconnect
+namespace: kafkahelm
+
+image:
+  kafka:
+    repository: confluentinc/cp-kafka
+    pullPolicy: Always
+    tag: latest
+  zookeeper:
+    repository: confluentinc/cp-zookeeper
+    pullPolicy: Always
+    tag: latest
+  connect:
+    repository: confluentinc/cp-kafka-connect
+    pullPolicy: Always
+    tag: latest
+
+env:
+  kafka:
+    saslEnabledMechanisms: PLAIN
+    saslMechanismInterBrokerProtocol: PLAIN
+    securityInterBrokerProtocol: SASL_SSL
+    advertisedListeners: "PLAINTEXT://ip-10-0-2-8.eu-central-1.compute.internal:30502,SASL_SSL://ip-10-0-2-8.eu-central-1.compute.internal:30503"
+    brokerId: 1
+    zookeeperConnect: zookeepersvc.kafkahelm.svc:2181
+    listeners: PLAINTEXT://0.0.0.0:9092,SASL_SSL://0.0.0.0:9093
+    offsetsTopicReplicationFactor: 1
+    transactionStateLogReplicationFactor: 1
+    superUsers: User:admin
+    jmxPort: 5021
+    listenerSecurityProtocolMap: PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT,SASL_SSL:SASL_SSL
+    messageMaxBytes: "10000000"
+    replicaFetchMaxBytes: "10100000"
+    heapOpts: "-Xms1g -Xmx2g" 
+    sslKeystoreType: JKS 
+    sslTruststoreType: JKS
+    sslKeystoreFilename: kafka-keystore
+    sslTruststoreFilename: kafka-truststore
+    sslClientAuth: required
+    sslKeyCredentials: key-password
+    sslKeystoreCredentials: keystore-password
+    sslTruststoreCredentials: truststore-password 
+    kafkaOpts: -Djava.security.auth.login.config=/etc/kafka/secrets/kafka-jaas.conf
+  zookeeper:
+    clientPort: 2181
+    initLimit: 5
+    log4jRootLoglevel: INFO
+    servers: 0.0.0.0:2888:3888
+    serverId: 1
+    syncLimit: 2
+    tickTime: 2000
+    extraArgs: "-Djava.security.auth.login.config=/etc/kafka/secrets/zookeeper-jaas.conf -Dzookeeper.authProvider=org.apache.zookeeper.server.auth.SASLAuthenticationProvider"     
+  connect:
+    configStorageReplicationFactor: 1
+    configStorageTopic: connect-config
+    groupId: connectgroup
+    internalKeyConverter: org.apache.kafka.connect.storage.StringConverter
+    internalValueConverter:  org.apache.kafka.connect.json.JsonConverter
+    keyConverter: org.apache.kafka.connect.storage.StringConverter
+    log4jRootLoglevel: INFO
+    offsetStorageReplicationFactor: 1
+    offsetStorageTopic: connect-offsets
+    pluginPath: /usr/share/java
+    restPort: 8083
+    saslMechanism: PLAIN
+    securityProtocol: SASL_SSL
+    statusStorageReplicationFactor: 1
+    statusStorageTopic: connect-status
+    heapOpts: "-Xms1G -Xmx1G -Xss1G"
+    saslEnabled: false
+    sslKeystoreLocation: /etc/kafka-connect/client_keystore
+    sslTruststoreLocation:  /etc/kafka-connect/client-truststore
+    bootstrapServers: ip-10-0-2-8.eu-central-1.compute.internal:30503
+    kafkaOpts: "-Djava.security.auth.login.config=/etc/kafka-connect/client-jaas.conf"
+    valusConverter: org.apache.kafka.connect.json.JsonConverter
+    restAdvertisedHostName: local
+    acks: all
+
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  kafka:
+    name: kafkasvc
+    type: NodePort
+    plaintextport: 9092
+    saslsslport: 9093
+    plaintextnodePort: 30502 #if the nodeport value is changed, it needs to be changed in env.kafka.advertisedlosterers also
+    saslsslnodePort: 30503 #if the nodeport value is changed, it needs to be changed in env.kafka.advertisedlosterers also
+  zookeeper:
+    name: zookeepersvc
+    type: NodePort
+    port: 2181
+    port1: 2888
+    port2: 3888
+    nodePort: 30501
+  connect:
+    name: connectsvc
+    type: NodePort
+    port: 8083
+    targetPort: 8083
+    nodePort: 30506
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.metadata.kafka.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "kafkahelmdeploy.kafkalabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "kafkahelmdeploy.kafkaselectors" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "kafkahelmdeploy.kafkaselectors" . | nindent 8 }}
+    spec:
+      containers:
+        - env:
+              - name: KAFKA_ADVERTISED_LISTENERS
+                value: '{{ .Values.env.kafka.advertisedListeners }}'
+              - name: KAFKA_BROKER_ID
+                value: '{{ .Values.env.kafka.brokerId }}'
+              - name: KAFKA_SECURITY_INTER_BROKER_PROTOCOL
+                value: {{ .Values.env.kafka.securityInterBrokerProtocol }}
+              - name: KAFKA_SASL_MECHANISM_INTER_BROKER_PROTOCOL
+                value: {{ .Values.env.kafka.saslMechanismInterBrokerProtocol }}
+              - name: KAFKA_SASL_ENABLED_MECHANISMS
+                value: {{ .Values.env.kafka.saslEnabledMechanisms }}
+              - name: KAFKA_ZOOKEEPER_CONNECT
+                value: {{ .Values.env.kafka.zookeeperConnect }}
+              - name: KAFKA_LISTENERS
+                value: {{ .Values.env.kafka.listeners }}
+              - name: KAFKA_SUPER_USERS
+                value: '{{ .Values.env.kafka.superUsers }}'
+              - name: KAFKA_JMX_PORT
+                value: '{{ .Values.env.kafka.jmxPort }}'
+              - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
+                value: {{ .Values.env.kafka.listenerSecurityProtocolMap }}
+              - name: KAFKA_MESSAGE_MAX_BYTES
+                value: '{{ .Values.env.kafka.messageMaxBytes }}'
+              - name: KAFKA_REPLICA_FETCH_MAX_BYTES
+                value: '{{ .Values.env.kafka.replicaFetchMaxBytes }}'
+              - name: KAFKA_OFFSETS.TOPIC.REPLICATION.FACTOR
+                value: '{{ .Values.env.kafka.offsetsTopicReplicationFactor }}'
+              - name: KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+                value: '{{ .Values.env.kafka.transactionStateLogReplicationFactor }}'
+              - name: KAFKA_HEAP_OPTS
+                value: '{{ .Values.env.kafka.heapOpts }}'
+              - name: KAFKA_SSL_KEYSTORE_TYPE
+                value: {{ .Values.env.kafka.sslKeystoreType }}
+              - name: KAFKA_SSL_TRUSTSTORE_TYPE
+                value: {{ .Values.env.kafka.sslTruststoreType }}
+              - name: KAFKA_SSL_KEYSTORE_FILENAME
+                value: {{ .Values.env.kafka.sslKeystoreFilename }}
+              - name: KAFKA_SSL_TRUSTSTORE_FILENAME
+                value: {{ .Values.env.kafka.sslTruststoreFilename }}
+              - name: KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM
+              - name: KAFKA_SSL_CLIENT_AUTH
+                value: {{ .Values.env.kafka.sslClientAuth }}
+              - name: KAFKA_SSL_KEY_CREDENTIALS
+                value: {{ .Values.env.kafka.sslKeyCredentials }}
+              - name: KAFKA_SSL_KEYSTORE_CREDENTIALS
+                value: {{ .Values.env.kafka.sslKeystoreCredentials }}
+              - name: KAFKA_SSL_TRUSTSTORE_CREDENTIALS
+                value: {{ .Values.env.kafka.sslTruststoreCredentials }}
+              - name: KAFKA_OPTS
+                value: '{{ .Values.env.kafka.kafkaOpts }}'
+          name: {{ .Values.metadata.kafka.name }}
+          image: "{{ .Values.image.kafka.repository }}:{{ .Values.image.kafka.tag }}"
+          imagePullPolicy: {{ .Values.image.kafka.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.kafka.plaintextport }}
+            - containerPort: {{ .Values.service.kafka.saslsslport }} 
+          volumeMounts:
+            - mountPath: /etc/kafka/secrets/{{ .Values.kafkaKeystoreFileName }}
+              subPath: {{ .Values.kafkaKeystoreFileName }}
+              name: kafka-volume-1
+            - mountPath: /etc/kafka/secrets/{{ .Values.kafkaTruststoreFileName }}
+              subPath: {{ .Values.kafkaTruststoreFileName }}
+              name: kafka-volume-2
+            - mountPath: /etc/kafka/secrets/{{ .Values.kafkaJaasFileName }}
+              subPath: {{ .Values.kafkaJaasFileName }}
+              name: kafka-volume-3
+            - mountPath: /etc/kafka/secrets/{{ .Values.kafkaKeyPassFileName }}
+              subPath: {{ .Values.kafkaKeyPassFileName }}
+              name: kafka-volume-4
+            - mountPath: /etc/kafka/secrets/{{ .Values.kafkaKeystorePassFileName }}
+              subPath: {{ .Values.kafkaKeystorePassFileName }}
+              name: kafka-volume-5
+            - mountPath: /etc/kafka/secrets/{{ .Values.kafkaTruststorePassFileName }}
+              subPath: {{ .Values.kafkaTruststorePassFileName }}
+              name: kafka-volume-6
+      nodeSelector:
+      {{- include "kafkahelmdeploy.nodeselectorlabels" . | nindent 8 }}
+      volumes:
+        - name: kafka-volume-1
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.secrets.kafkaKeystoreSecretName }}
+        - name: kafka-volume-2
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.secrets.kafkaTruststoreSecretName }}
+        - name: kafka-volume-3
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.secrets.kafkaJaasSecretName }}
+        - name: kafka-volume-4
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.secrets.kafkaKeypassSecretName }}
+        - name: kafka-volume-5
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.secrets.kafkaKeystorepassSecretName }}
+        - name: kafka-volume-6
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.secrets.kafkaTruststorepassSecretName }}

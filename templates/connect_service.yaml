@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.connect.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+  {{- include "kafkahelmdeploy.connectlabels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.connect.type }}
+  ports:
+    - port: {{ .Values.service.connect.port }}
+      targetPort: {{ .Values.service.connect.port }}
+      protocol: TCP
+      name: http
+      nodePort: {{ .Values.service.connect.nodePort }}
+  selector:
+    {{- include "kafkahelmdeploy.connectselectors" . | nindent 4 }}

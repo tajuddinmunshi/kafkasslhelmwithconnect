@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.metadata.zookeeper.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "kafkahelmdeploy.zookeeperlabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "kafkahelmdeploy.zookeeperselectors" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "kafkahelmdeploy.zookeeperselectors" . | nindent 8 }}
+    spec:
+      containers:
+        - env:
+              - name: ZOOKEEPER_CLIENT_PORT
+                value: '{{ .Values.env.zookeeper.clientPort }}'
+              - name: ZOOKEEPER_INIT_LIMIT
+                value: '{{ .Values.env.zookeeper.initLimit }}'
+              - name: ZOOKEEPER_LOG4J_ROOT_LOGLEVEL
+                value: {{ .Values.env.zookeeper.log4jRootLoglevel }}
+              - name: ZOOKEEPER_SERVERS
+                value: {{ .Values.env.zookeeper.servers }}
+              - name: ZOOKEEPER_SERVER_ID
+                value: '{{ .Values.env.zookeeper.serverId }}'
+              - name: ZOOKEEPER_SYNC_LIMIT
+                value: '{{ .Values.env.zookeeper.syncLimit }}'
+              - name: ZOOKEEPER_TICK_TIME
+                value: '{{ .Values.env.zookeeper.tickTime }}'
+              - name: EXTRA_ARGS
+                value: '{{ .Values.env.zookeeper.extraArgs }}'
+          name: {{ .Values.metadata.zookeeper.name }}
+          image: "{{ .Values.image.zookeeper.repository }}:{{ .Values.image.zookeeper.tag }}"
+          imagePullPolicy: {{ .Values.image.zookeeper.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.zookeeper.port }}
+            - containerPort: {{ .Values.service.zookeeper.port1 }}
+            - containerPort: {{ .Values.service.zookeeper.port2 }}
+          volumeMounts:
+            - mountPath: /etc/kafka/secrets/{{ .Values.zookeeperJaasFileName }}
+              subPath: {{ .Values.zookeeperJaasFileName }}
+              name: zookeeper-volume-1
+      nodeSelector:
+      {{- include "kafkahelmdeploy.nodeselectorlabels" . | nindent 8 }}
+      volumes:
+        - name: zookeeper-volume-1
+          secret:
+            defaultMode: 420
+            secretName: {{ .Values.secrets.zookeeperJaasSecretName }}
+          

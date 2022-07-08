@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.kafka.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+  {{- include "kafkahelmdeploy.kafkalabels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.kafka.type }}
+  ports:
+    - port: {{ .Values.service.kafka.plaintextport }}
+      targetPort: {{ .Values.service.kafka.plaintextport }}
+      protocol: TCP
+      name: plaintext
+      nodePort: {{ .Values.service.kafka.plaintextnodePort }}
+    - port: {{ .Values.service.kafka.saslsslport }}
+      targetPort: {{ .Values.service.kafka.saslsslport }}
+      protocol: TCP
+      name: saslssl
+      nodePort: {{ .Values.service.kafka.saslsslnodePort }}
+  selector:
+    {{- include "kafkahelmdeploy.kafkaselectors" . | nindent 4 }}

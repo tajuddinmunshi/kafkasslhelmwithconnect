@@ -1,0 +1,80 @@
+Introduction: 
+This deployment creates a single node Kafka and zookeeper cluster with sasl and ssl authentication enabled.
+
+Installation: 
+The script install.sh is used for the end to end deployment of the kafka and zookeeper cluster on kubernetes using Helm.
+
+Uninstall/Cleanup:
+The script uninstall.sh is used to uninstall the helm release and deletes the kubernetes objects and related files.
+
+
+Installation description:
+The script will create/execute the below required pre-requisites:
+1.A dummy CA.
+2.A dummy Kafka keystore and truststore.
+3.Password files required by kubernetes to create secrets. 
+4.A kubernetes namespace "kafkahelm".
+5.Kubernetes secrets 
+6.Add a label to the kubernetes node so that the pods are assigned to the same node after restart.
+7.The helm chat deployment. Helm will create the below:
+  A Kafka deployment with 1 replica
+  A Zookeeper deployment with 1 replica
+  A nodePort service for the Kafka deployment
+  A nodePort service for the Zookeeper deployment 
+8.Update the kafka advertised ip in values.yaml with the correct ip of the kubernetes node whare the pod is deployed.
+9.Upgrade the helm release to reflect the updated kafka advertised ip.  
+10.Display the required information about broker, zookeeper, users and additional information required by clients.
+
+
+Uninstall/Cleanup description:
+1.The script will uninstall/delete the below:
+2.The kafka keystore and truststore.
+3.The password files.
+4.Kubernetes secrets.
+5.Uninstall the helm release.
+6.Delete the kubernetes namespace "kafkahelm".
+7.Revert back the changes made to values.yaml by installation script.
+8.Remove the kubernetes node label.
+
+
+Additional script description:
+1.create-selfsigned-certificates.sh: The install.sh script uses this script in the background
+to create the ssl pre-requisites like generating dummy CA, keystore, truststore files and put it under 
+files folder. The values inside this script can be changes as required to generate different CA, keystore 
+and truststore. It also creates the password files under files folder which are required by kubernetes secrets.
+
+2.prerequisite.sh: The install.sh script uses this script to label the node and create the kubernetes 
+namespace and secrets which contains the keystore, truststore, passwords and jaas files .
+
+
+Note: kafka jaas, zookeeper jaas are predefines under files folder.
+1.This is required by kubernetes to create secrets.
+2.A client.properties file is also predefined inside files folder,
+as a guide for clients. The client user and passwords could be found in these files.
+3.The passwords for keystore,truststore and key can be found under files folder after execution of install script.
+
+
+Sample file contents:
+1.example content of key-password:
+password-for-key
+
+2.example content of kafka-jaas.conf:
+KafkaServer {
+   org.apache.kafka.common.security.plain.PlainLoginModule required
+   username="admin"
+   password="<admin-password>"
+   user_admin="admin-secret"
+   user_testkafka="<user-password>";
+};
+Client {
+   org.apache.kafka.common.security.plain.PlainLoginModule required
+   username="testkafka"
+   password="<user-password>";
+};
+
+
+3.example content of zookeeper-jaas.conf:
+Server {
+    org.apache.zookeeper.server.auth.DigestLoginModule required
+    user_admin="admin-password";
+};
