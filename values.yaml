@@ -39,15 +39,15 @@ namespace: kafkahelm
 image:
   kafka:
     repository: confluentinc/cp-kafka
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     tag: latest
   zookeeper:
     repository: confluentinc/cp-zookeeper
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     tag: latest
   connect:
     repository: confluentinc/cp-kafka-connect
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     tag: latest
 
 env:
@@ -55,7 +55,7 @@ env:
     saslEnabledMechanisms: PLAIN
     saslMechanismInterBrokerProtocol: PLAIN
     securityInterBrokerProtocol: SASL_SSL
-    advertisedListeners: "PLAINTEXT://ip-10-0-2-8.eu-central-1.compute.internal:30502,SASL_SSL://ip-10-0-2-8.eu-central-1.compute.internal:30503"
+    advertisedListeners: PLAINTEXT://x.x.x.x:30502,SASL_SSL://x.x.x.x:30503
     brokerId: 1
     zookeeperConnect: zookeepersvc.kafkahelm.svc:2181
     listeners: PLAINTEXT://0.0.0.0:9092,SASL_SSL://0.0.0.0:9093
@@ -105,7 +105,7 @@ env:
     saslEnabled: false
     sslKeystoreLocation: /etc/kafka-connect/client_keystore
     sslTruststoreLocation:  /etc/kafka-connect/client-truststore
-    bootstrapServers: ip-10-0-2-8.eu-central-1.compute.internal:30503
+    bootstrapServers: x.x.x.x:30503
     kafkaOpts: "-Djava.security.auth.login.config=/etc/kafka-connect/client-jaas.conf"
     valusConverter: org.apache.kafka.connect.json.JsonConverter
     restAdvertisedHostName: local

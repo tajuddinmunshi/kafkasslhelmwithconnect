@@ -40,6 +40,16 @@ spec:
             - containerPort: {{ .Values.service.zookeeper.port }}
             - containerPort: {{ .Values.service.zookeeper.port1 }}
             - containerPort: {{ .Values.service.zookeeper.port2 }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.service.zookeeper.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.service.zookeeper.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
           volumeMounts:
             - mountPath: /etc/kafka/secrets/{{ .Values.zookeeperJaasFileName }}
               subPath: {{ .Values.zookeeperJaasFileName }}
