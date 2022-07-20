@@ -46,10 +46,12 @@ rm -rf files/kafka-truststore files/kafka-keystore files/client-truststore files
 sed 's|PLAINTEXT://.*:30502|PLAINTEXT://x.x.x.x:30502|g' values.yaml > values1.yaml
 mv values1.yaml values.yaml
 
+#NOTE: The script is tested on max os, in case sed commands gives error, please correct the syntax as per the need
+
 sed 's|SASL_SSL://.*:30503|SASL_SSL://x.x.x.x:30503|g' values.yaml > values1.yaml
 mv values1.yaml values.yaml 
 
-sed 's|: .*:30503|: x.x.x.x:30503|g' values.yaml > values1.yaml
+sed 's|bootstrapServers: .*:30503|bootstrapServers: x.x.x.x:30503|g' values.yaml > values1.yaml
 mv values1.yaml values.yaml
 
 #removing node label created for the deployment

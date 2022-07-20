@@ -71,7 +71,17 @@ spec:
           imagePullPolicy: {{ .Values.image.kafka.pullPolicy }}
           ports:
             - containerPort: {{ .Values.service.kafka.plaintextport }}
-            - containerPort: {{ .Values.service.kafka.saslsslport }} 
+            - containerPort: {{ .Values.service.kafka.saslsslport }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.service.kafka.saslsslport }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.service.kafka.saslsslport }}
+            initialDelaySeconds: 15
+            periodSeconds: 20 
           volumeMounts:
             - mountPath: /etc/kafka/secrets/{{ .Values.kafkaKeystoreFileName }}
               subPath: {{ .Values.kafkaKeystoreFileName }}
